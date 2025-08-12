@@ -1,0 +1,24 @@
+{
+	"params": [
+		{
+			"name": "Position Key (Insert Map Key)",
+			"type": "String",
+			"defaultValue": ""
+		},
+		{
+			"name": "X",
+			"type": "Float(null, null, 10, 3)",
+			"defaultValue": 0
+		},
+		{
+			"name": "Y",
+			"type": "Float(null, null, 10, 3)",
+			"defaultValue": 0
+		},
+		{
+			"name": "Save Type",
+			"type": "DropDown('Save', 'Save (Current Position)', 'Save (Offset Current Position)', 'Delete')",
+			"defaultValue": "Save"
+		}
+	]
+}
