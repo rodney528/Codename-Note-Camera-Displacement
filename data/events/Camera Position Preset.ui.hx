@@ -5,13 +5,10 @@ function generateIcon():Void {
 				if (!inMenu) {
 					var group = new EventIconGroup();
 					group.add(generateDefaultIcon(event.name));
-					if (event.params[1]) {
+					if (event.params[1] && event.params[3] != 'CLASSIC')
 						generateEventIconDurationArrow(group, event.params[2]);
-						group.members[0].y -= 2;
-						generateEventIconNumbers(group, event.params[2]);
-					}
 					return group;
-				} else return generateDefaultIcon(event.name);
+				}
 			}
 	}
 }

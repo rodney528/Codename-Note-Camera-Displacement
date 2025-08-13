@@ -9,7 +9,7 @@ function generateIcon():Void {
 					generateEventIconNumbers(group, event.params[1], 4, -12);
 					generateEventIconNumbers(group, event.params[2], 4, 21);
 					return group;
-				} else return generateDefaultIcon(event.name);
+				}
 			}
 	}
 }
