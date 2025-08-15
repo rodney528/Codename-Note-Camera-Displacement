@@ -220,6 +220,7 @@ function noteDataEKConverter(data:Int, amount:Int = 4):Int {
 }
 
 function onNoteHit(event):Void {
+	if (event.cancelled) return;
 	var strumIndex:Int = strumLines.members.indexOf(event.note.strumLine);
 	if (activeDisplacementList[strumIndex] ?? true && (allowAllPresses || strumIndex == theCameraTarget)) {
 		var sustainLength:Float = event.note.nextNote?.sustainLength;
@@ -241,8 +242,9 @@ function onNoteHit(event):Void {
 }
 
 function onPlayerMiss(event):Void {
+	if (event.cancelled) return;
 	var strumIndex:Int = strumLines.members.indexOf(event.note.strumLine);
-	if (!event.cancelled && canSnapOnMiss && (allowAllPresses || strumIndex == theCameraTarget)) {
+	if (canSnapOnMiss && (allowAllPresses || strumIndex == theCameraTarget)) {
 		cancelTimers();
 		snapCamPos();
 	}
