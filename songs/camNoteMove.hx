@@ -25,21 +25,6 @@ public var camVelocity = {
 	active: true,
 	mult: 1.5
 }
-/**
- * Who (per strumLine) has displacement?
- * default: blank (which defaults to true)
- */
-public var activeDisplacementList:Array<Null<Bool>> = [];
-/**
- * Allows all strumLine hits to cause camera displacement, no matter `curCameraTarget` value.
- * default: false
- */
-public var allowAllPresses:Bool = false;
-/**
- * Force which strumLine causes camera displacement. `null` to disable.
- * default: null
- */
-public var forceTargetDetection:Null<Int> = null;
 
 // Internal stuff.
 public var presentCameraPositions:StringMap<FlxPoint> = new StringMap();
@@ -56,9 +41,10 @@ function cancelTimers() {
 	camAfterBop.cancel();
 }
 
-var theCameraTarget(get, never):Int;
-function get_theCameraTarget():Int
-	return forceTargetDetection ?? curCameraTarget;
+/**
+ * The current strumLine with the power to effect camera displacement.
+ */
+public var curDisplacementTarget:Int = 0;
 
 var velocity(default, set):Bool = false;
 function set_velocity(value:Bool):Bool {
@@ -93,6 +79,9 @@ function onEvent(event):Void {
 				camGame.targetOffset.set();
 				velocity = false;
 			}
+			curDisplacementTarget = event.event.params[0];
+		case 'Set Displacement Target':
+			curDisplacementTarget = event.event.params[0];
 		case 'Camera Position':
 			targetFixTimer.cancel();
 			cameraPositionOffset = null;
@@ -162,6 +151,12 @@ function onEvent(event):Void {
 	}
 }
 
+/**
+ * Converts key counts of 1 to 9 into 4 input.
+ * @param data The input.
+ * @param amount The input type.
+ * @return Int ~ The output.
+ */
 function noteDataEKConverter(data:Int, amount:Int = 4):Int {
 	if (amount == 1)
 		if (data == 0) return 2;
@@ -222,7 +217,7 @@ function noteDataEKConverter(data:Int, amount:Int = 4):Int {
 function onNoteHit(event):Void {
 	if (event.cancelled) return;
 	var strumIndex:Int = strumLines.members.indexOf(event.note.strumLine);
-	if (activeDisplacementList[strumIndex] ?? true && (allowAllPresses || strumIndex == theCameraTarget)) {
+	if (strumIndex == curDisplacementTarget) {
 		var sustainLength:Float = event.note.nextNote?.sustainLength;
 		velocity = true;
 		switch (noteDataEKConverter(event.direction, event.note.strumLine.length)) {
@@ -244,18 +239,67 @@ function onNoteHit(event):Void {
 function onPlayerMiss(event):Void {
 	if (event.cancelled) return;
 	var strumIndex:Int = strumLines.members.indexOf(event.note.strumLine);
-	if (canSnapOnMiss && (allowAllPresses || strumIndex == theCameraTarget)) {
+	if (canSnapOnMiss && strumIndex == curDisplacementTarget) {
 		cancelTimers();
 		snapCamPos();
 	}
 }
 
 function camIdleBop(onTick:Int):Void {
-	if (theCameraTarget != -1 && allowCamIdleBop && !inCutscene) {
+	if (allowCamIdleBop && !inCutscene) {
 		camGame.targetOffset.set();
-		var char:Character = strumLines.members[theCameraTarget].characters[0];
-		if (char == null && char.lastAnimContext != 'DANCE') return;
+		var stopCamIdleBop:Bool = false;
+
+		function charCheck():Character {
+			var finalTarget:Character = null;
+			function targetCheck(curTarget:Int, ?pastOneIsDaning:Bool):Void {
+				var targets:Array<Character> = strumLines.members[curTarget].characters;
+				var highestTarget:Character = null;
+				var everyonesDancing:Bool = pastOneIsDaning ?? true;
+				for (char in targets) {
+					if (char == null) continue;
+					if (highestTarget == null) highestTarget = char;
+					if (char.lastAnimContext != 'DANCE') {
+						everyonesDancing = false;
+						break;
+					}
+				}
+				if (everyonesDancing)
+					finalTarget = highestTarget;
+				return everyonesDancing;
+			}
+
+			var camTargetDance:Bool = false;
+			if (curCameraTarget != -1)
+				camTargetDance = targetCheck(curCameraTarget);
+			var camTarget:Character = finalTarget;
+
+			var displacementTargetDance:Bool = false;
+			if (curDisplacementTarget != -1)
+				displacementTargetDance = targetCheck(curDisplacementTarget, camTargetDance);
+
+			if (finalTarget == null)
+				finalTarget = camTarget;
+
+			if (!camTargetDance && !displacementTargetDance)
+				finalTarget = null;
+			else if (!camTargetDance && displacementTargetDance)
+				finalTarget = null;
+			else if (camTargetDance && !displacementTargetDance)
+				finalTarget = null;
+
+			if (finalTarget == null)
+				stopCamIdleBop = true;
+
+			return finalTarget;
+		}
+
+		var char:Character = charCheck();
+		// iconP2.color = stopCamIdleBop ? FlxColor.RED : FlxColor.GREEN;
+		if (stopCamIdleBop) return;
 		function addIdleSuffix(anim:String):String return anim + char.idleSuffix;
+		// not doing ".split('-')" because suffixes don't force the use of dashes in cne
+
 		if (char.hasAnimation(addIdleSuffix('danceLeft')) && char.hasAnimation(addIdleSuffix('danceRight'))) {
 			if ((onTick + char.beatOffset) % char.beatInterval == 0) {
 				if (char.getAnimName() == addIdleSuffix('danceLeft')) {
