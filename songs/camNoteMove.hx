@@ -113,6 +113,7 @@ function onEvent(event):Void {
 				tween.cancel();
 			}
 
+			curCameraTarget = -1;
 			camFollow.setPosition(present.x, present.y);
 			if (event.event.params[1] == false) FlxG.camera.snapToTarget();
 			else if (event.event.params[3] != null && event.event.params[3] != 'CLASSIC') {
