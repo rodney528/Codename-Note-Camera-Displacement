@@ -49,7 +49,7 @@ public var curDisplacementTarget:Int = 0;
 var velocity(default, set):Bool = false;
 function set_velocity(value:Bool):Bool {
 	if (velocity != value)
-		camGame.followLerp = Flags.DEFAULT_CAMERA_FOLLOW_SPEED * (value && camVelocity.active ? camVelocity.mult : 1) / camGame.zoom;
+		camGame.followLerp = Flags.DEFAULT_CAMERA_FOLLOW_SPEED * (value && camVelocity.active ? camVelocity.mult : 1) / camGame.getActualZoom();
 	return velocity = value;
 }
 
@@ -228,7 +228,7 @@ function onNoteHit(event):Void {
 			case 3: camGame.targetOffset.set(displacementOffset.x, 0);
 			default: camGame.targetOffset.set();
 		}
-		camGame.targetOffset.set(camGame.targetOffset.x / camGame.zoom, camGame.targetOffset.y / camGame.zoom);
+		camGame.targetOffset.set(camGame.targetOffset.x / camGame.getActualZoom(), camGame.targetOffset.y / camGame.getActualZoom());
 		cancelTimers();
 		coolCamReturn.start((Conductor.stepCrochet / 1000) * (event.note.isSustainNote ? 0.6 : 1.6), (_) -> {
 			camGame.targetOffset.set();
