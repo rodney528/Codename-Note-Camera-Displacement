@@ -1,6 +1,13 @@
 import haxe.ds.StringMap;
 import funkin.backend.system.Flags;
 
+var isPixel(get, never):Bool;
+function get_isPixel():Bool {
+	if (scripts.getByName('pixel.hx') != null)
+		return enableCameraHacks;
+	return false;
+}
+
 // Main vars.
 /**
  * X and Y displacement offset.
@@ -49,7 +56,7 @@ public var curDisplacementTarget:Int = 0;
 var velocity(default, set):Bool = false;
 function set_velocity(value:Bool):Bool {
 	if (velocity != value)
-		camGame.followLerp = Flags.DEFAULT_CAMERA_FOLLOW_SPEED * (value && camVelocity.active ? camVelocity.mult : 1) / camGame.getActualZoom();
+		camGame.followLerp = Flags.DEFAULT_CAMERA_FOLLOW_SPEED * (value && camVelocity.active ? camVelocity.mult : 1) / (isPixel ? daPixelZoom / 2 : 1) / camGame.getActualZoom();
 	return velocity = value;
 }
 
@@ -228,6 +235,10 @@ function onNoteHit(event):Void {
 			case 3: camGame.targetOffset.set(displacementOffset.x, 0);
 			default: camGame.targetOffset.set();
 		}
+		if (isPixel) {
+			camGame.targetOffset.x /= daPixelZoom;
+			camGame.targetOffset.y /= daPixelZoom;
+		}
 		camGame.targetOffset.set(camGame.targetOffset.x / camGame.getActualZoom(), camGame.targetOffset.y / camGame.getActualZoom());
 		cancelTimers();
 		coolCamReturn.start((Conductor.stepCrochet / 1000) * (event.note.isSustainNote ? 0.6 : 1.6), (_) -> {
@@ -308,12 +319,20 @@ function camIdleBop(onTick:Int):Void {
 					camGame.targetOffset.set();
 					camGame.targetOffset.x -= displacementOffset.x / 2;
 					camGame.targetOffset.y -= displacementOffset.y / 2;
+					if (isPixel) {
+						camGame.targetOffset.x /= daPixelZoom;
+						camGame.targetOffset.y /= daPixelZoom;
+					}
 					camAfterBop.start((Conductor.crochet / 1000) / 2, () -> camGame.targetOffset.set());
 				} else if (char.getAnimName() == addIdleSuffix('danceRight')) {
 					cancelTimers();
 					camGame.targetOffset.set();
 					camGame.targetOffset.x += displacementOffset.x / 2;
 					camGame.targetOffset.y -= displacementOffset.y / 2;
+					if (isPixel) {
+						camGame.targetOffset.x /= daPixelZoom;
+						camGame.targetOffset.y /= daPixelZoom;
+					}
 					camAfterBop.start((Conductor.crochet / 1000) / 2, () -> camGame.targetOffset.set());
 				}
 			}
@@ -323,6 +342,7 @@ function camIdleBop(onTick:Int):Void {
 					cancelTimers();
 					camGame.targetOffset.set();
 					camGame.targetOffset.y += displacementOffset.y / 2;
+					if (isPixel) camGame.targetOffset.y /= daPixelZoom;
 					camAfterBop.start((Conductor.crochet / 1000) / 2, () -> camGame.targetOffset.set());
 				}
 			}
