@@ -14,26 +14,26 @@ function get_isPixel():Bool {
  * default: 30
  */
 public var displacementOffset:FlxPoint = FlxPoint.get(
-	Flags.customFlags.get('DEFAULT_NOTE_DISPLACEMENT_OFFSET_X') ?? Flags.customFlags.get('DEFAULT_NOTE_DISPLACEMENT_OFFSET') ?? 30,
-	Flags.customFlags.get('DEFAULT_NOTE_DISPLACEMENT_OFFSET_Y') ?? Flags.customFlags.get('DEFAULT_NOTE_DISPLACEMENT_OFFSET') ?? 30
+	Std.parseFloat(Flags.customFlags.get('DEFAULT_NOTE_DISPLACEMENT_OFFSET_X') ?? Flags.customFlags.get('DEFAULT_NOTE_DISPLACEMENT_OFFSET') ?? '30'),
+	Std.parseFloat(Flags.customFlags.get('DEFAULT_NOTE_DISPLACEMENT_OFFSET_Y') ?? Flags.customFlags.get('DEFAULT_NOTE_DISPLACEMENT_OFFSET') ?? '30')
 );
 /**
  * Do you want the camera to snap to the player cam position on miss?
  * default: true
  */
-public var canSnapOnMiss:Bool = Flags.customFlags.get('DEFAULT_CAMERA_SNAP_ON_MISS') ?? true;
+public var canSnapOnMiss:Bool = (Flags.customFlags.get('DEFAULT_CAMERA_SNAP_ON_MISS') ?? 'true') == 'true';
 /**
  * Remade the cool cam idle bop movement that Blantados did for his version!
  * default: true
  */
-public var allowCamIdleBop:Bool = Flags.customFlags.get('DEFAULT_CAMERA_IDLE_BOP') ?? true;
+public var allowCamIdleBop:Bool = (Flags.customFlags.get('DEFAULT_CAMERA_IDLE_BOP') ?? 'true') == 'true';
 /**
  * Change camera speed when hitting notes (reverts when none are being hit).
  * default: true, 1.5
  */
 public var camVelocity = {
-	active: Flags.customFlags.get('DEFAULT_CAMERA_VELOCITY') ?? true,
-	mult: Flags.customFlags.get('DEFAULT_CAMERA_VELOCITY_MULT') ?? 1.5
+	active: (Flags.customFlags.get('DEFAULT_CAMERA_VELOCITY') ?? 'true') == 'true',
+	mult: Std.parseFloat(Flags.customFlags.get('DEFAULT_CAMERA_VELOCITY_MULT') ?? '1.5')
 }
 
 // Internal stuff.
